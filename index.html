@@ -33,6 +33,7 @@
   function setStatus(msg,kind=''){const el=$('syncStatus');el.textContent=msg;el.className='status '+kind;}
   function eventsForDay(day){return state.events.filter(e=>e.start_date<=day&&e.end_date>=day);}
   function matchesForDay(day){return state.matches.filter(m=>m.match_date&&localDate(new Date(m.match_date))===day);}
+  function matchLocationIcon(m){const v=String(m.venue||'').toLowerCase();if(/\b(away|visitor|visitante|fuera|away game)\b/.test(v))return '✈️';if(/\b(home|local|casa|en casa)\b/.test(v))return '🏠';return '⚽';}
   function renderCalendar(){
     $('monthTitle').textContent=state.month.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
     const first=new Date(state.month.getFullYear(),state.month.getMonth(),1),offset=(first.getDay()+6)%7,start=new Date(first);start.setDate(first.getDate()-offset);
@@ -40,7 +41,7 @@
     for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const key=localDate(d),ev=eventsForDay(key),ma=matchesForDay(key);
       const cls=['day',d.getMonth()!==state.month.getMonth()?'outside':'',key===state.selected?'selected':'',key===localDate(new Date())?'today':''].filter(Boolean).join(' '),chips=[];
       ev.slice(0,2).forEach(e=>chips.push(`<div class="eventchip ${esc(e.event_type)}">${esc(e.person)} · ${esc(typeNames[e.event_type]||e.event_type)}</div>`));
-      ma.slice(0,1).forEach(m=>chips.push(`<div class="eventchip match">⚽ ${esc(m.opponent||'UD Almería')}</div>`));
+      ma.slice(0,1).forEach(m=>chips.push(`<div class="eventchip match">${matchLocationIcon(m)} ${esc(m.opponent||'Rival por confirmar')}</div>`));
       const total=ev.length+ma.length;html.push(`<div class="${cls}" data-day="${key}" role="button" tabindex="0" aria-label="${esc(fmt(key,{day:'numeric',month:'long',year:'numeric'}))}"><span class="num">${d.getDate()}</span>${chips.join('')}${total>chips.length?`<div class="daymore">+${total-chips.length} más</div>`:''}</div>`);
     }
     $('calendarDays').innerHTML=html.join('');
@@ -65,7 +66,7 @@
   function resetForm(){$('eventForm').reset();$('eventId').value='';$('startDate').value=state.selected;$('endDate').value=state.selected;$('formHeading').textContent='Añadir evento';$('saveBtn').textContent='Guardar evento';$('cancelEdit').classList.add('hidden');$('formError').textContent='';}
   function editEvent(id){const e=state.events.find(x=>x.id===id);if(!e)return;$('eventId').value=e.id;$('person').value=e.person;$('eventType').value=e.event_type;$('startDate').value=e.start_date;$('endDate').value=e.end_date;$('note').value=e.note||'';$('formHeading').textContent='Editar evento';$('saveBtn').textContent='Guardar cambios';$('cancelEdit').classList.remove('hidden');$('formError').textContent='';$('eventForm').scrollIntoView({behavior:'smooth',block:'start'});}
   async function deleteEvent(id){const e=state.events.find(x=>x.id===id);if(!e||!confirm(`¿Eliminar el evento de ${e.person} (${typeNames[e.event_type]||e.event_type})?`))return;const {error}=await client.from('calendar_events').delete().eq('id',id);if(error){$('formError').textContent='No se pudo eliminar: '+error.message;return;}await loadData();}
-  $('eventForm').addEventListener('submit',async e=>{e.preventDefault();$('formError').textContent='';const start=$('startDate').value,end=$('endDate').value;if(end<start){$('formError').textContent='La fecha “Hasta” no puede ser anterior a “Desde”.';return;}const now=new Date().toISOString(),row={person:$('person').value,event_type:$('eventType').value,start_date:start,end_date:end,note:$('note').value.trim()||null,updated_at:now},id=$('eventId').value;let result;
+  $('eventForm').addEventListener('submit',async e=>{e.preventDefault();$('formError').textContent='';const start=$('startDate').value,end=$('endDate').value;if(end<start){$('formError').textContent='La fecha “Hasta” no puede ser anterior a “Desde”.';return;}const now=new Date().toISOString(),row={person:$('person').value,event_type:$('eventType').value,start_date:start,end_date:end,note:$('note').value.trim(),updated_at:now},id=$('eventId').value;let result;
     if(id)result=await client.from('calendar_events').update(row).eq('id',id);else result=await client.from('calendar_events').insert({...row,id:crypto.randomUUID(),created_at:now});
     if(result.error){$('formError').textContent='No se pudo guardar: '+result.error.message;return;}state.selected=start;state.month=new Date(dateObj(start).getFullYear(),dateObj(start).getMonth(),1);resetForm();await loadData();});
   $('cancelEdit').addEventListener('click',resetForm);$('prevMonth').addEventListener('click',()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()-1,1);renderCalendar();});$('nextMonth').addEventListener('click',()=>{state.month=new Date(state.month.getFullYear(),state.month.getMonth()+1,1);renderCalendar();});$('todayBtn').addEventListener('click',()=>{state.selected=localDate(new Date());state.month=new Date(new Date().getFullYear(),new Date().getMonth(),1);resetForm();renderCalendar();renderSelected();});
