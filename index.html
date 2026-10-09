@@ -25,7 +25,7 @@
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = id => document.getElementById(id);
   const state = {month:new Date(new Date().getFullYear(),new Date().getMonth(),1),selected:localDate(new Date()),events:[],matches:[]};
-  const typeNames = {vac:'Vacaciones',mor:'Mañana',tar:'Tarde',gua:'Guardia',des:'Descanso',fes:'Festivo'};
+  const typeNames = {vac:'🏖️ Vacaciones',mor:'🌅 Mañana',tar:'🌆 Tarde',gua:'🚨 Guardia',des:'😴 Descanso',fes:'🎉 Festivo'};
   function localDate(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;}
   function dateObj(s){return new Date(`${s}T12:00:00`);}
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
