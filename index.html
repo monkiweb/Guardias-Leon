@@ -22,7 +22,17 @@
 (() => {
   const SUPABASE_URL = 'https://jyzvyojafkbkyfptjgnf.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Ghvyf6_LhO7_KWFmcXCGAg_9JSUXs8h';
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const client = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  }
+);
   const $ = id => document.getElementById(id);
   const state = {month:new Date(new Date().getFullYear(),new Date().getMonth(),1),selected:localDate(new Date()),events:[],matches:[],holidays:[],notes:[]};
   const typeNames = {vac:'🏖️ Vacaciones',mor:'☀️ Mañana',tar:'🌙 Tarde',gua:'🚨 Guardia',des:'💀 Horario Partido',fes:'🎉 Festivo',cus:'Personalizado'};
