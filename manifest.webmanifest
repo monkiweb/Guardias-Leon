@@ -1,0 +1,13 @@
+{
+  "name": "Leon & Maria · Calendario",
+  "short_name": "Leon & Maria",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f5f7fb",
+  "description": "Calendario compartido de Leon y Maria",
+  "icons": [
+    {"src":"apple-touch-icon.png","sizes":"180x180","type":"image/png","purpose":"any"}
+  ]
+}
